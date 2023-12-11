@@ -64,7 +64,7 @@ class Bot:
         }
         r = requests.post(endpoint, params=params, data=data).json()
         # print(r)
-        if r.get("errorcode"):
+        if "errorcode" in r:
             self.get_token()
             r = requests.post(endpoint, params=params, data=data).json()
         return r
@@ -86,7 +86,8 @@ class Bot:
             )
             message = str(chat_completion)
             logger.info(chat_completion)
-        except:
+        except Exception as e:
+            logger.error(e)
             message = "Error"
 
         response = self.api_request(
