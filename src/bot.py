@@ -121,7 +121,7 @@ class Bot:
 
 async def running():
     bot = Bot()
-    bot.read_token()
+    bot.get_token()
     while True:
         try:
             bot.get_message()
