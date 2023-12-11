@@ -84,7 +84,8 @@ class Bot:
                 ],
                 model="gpt-3.5-turbo",
             )
-            message = chat_completion.choices[0]
+            message = str(chat_completion)
+            logger.info(chat_completion)
         except:
             message = "Error"
 
@@ -109,6 +110,7 @@ class Bot:
             },
         )
         text = response["messages"][-1]["text"]
+        logger.info(text)
         if not "Answer ChatGPT" in text:
             self.send_message(text)
 
