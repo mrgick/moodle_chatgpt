@@ -1,12 +1,10 @@
 import requests
 import json
-import os
 import time
 import asyncio
 import logging
 from .settings import settings
-
-from re_gpt import SyncChatGPT
+from .gigachat import get_gigachat_message
 
 logger = logging.getLogger(__name__)
 
@@ -14,8 +12,6 @@ logger = logging.getLogger(__name__)
 SITE_URL = str(settings.SITE_URL)
 EMAIL = settings.EMAIL
 PASSWORD = settings.PASSWORD
-SESSION_TOKEN = settings.SESSION_TOKEN
-OPENAI_KEY = settings.OPENAI_KEY
 
 
 class Bot:
@@ -70,42 +66,15 @@ class Bot:
         response = self.api_request("core_webservice_get_site_info")
         self.user_id = response["userid"]
 
-    def get_msg_chatgpt_client(self, promt):
-        with SyncChatGPT(session_token=SESSION_TOKEN) as chatgpt:
-            conversation = chatgpt.create_new_conversation()
-            return "".join(x["content"] for x in conversation.chat(promt))
-
-    def get_msg_alt_chatgpt(self, promt):
-        return requests.post(
-            url="https://api.pawan.krd/v1/chat/completions",
-            headers={
-                "Authorization": f"Bearer {OPENAI_KEY}",
-                "Content-Type": "application/json",
-            },
-            json={
-                "model": "pai-001-light-beta",
-                "max_tokens": 256,
-                "messages": [
-                    {
-                        "role": "system",
-                        "content": "Вы ассистент, который очень хорошо знает тему Протоколы и интерфейсы",
-                    },
-                    {"role": "user", "content": promt},
-                ],
-            },
-        ).json()["choices"][0]["message"]["content"]
-
-    def send_message(self, promt):
-        promt = promt.replace("<b>","").replace("</b>","")
+    async def send_message(self, promt):
+        promt = promt.replace("<b>", "").replace("</b>", "")
+        message = "test"
         try:
-            message = self.get_msg_chatgpt_client(promt)
+            message = await get_gigachat_message(promt)
             print(message)
         except Exception as e:
             logger.error(e)
-            try:
-                message = self.get_msg_alt_chatgpt(promt)
-            except:
-                message = "Error"
+            message = "Error"
 
         response = self.api_request(
             "core_message_send_messages_to_conversation",
@@ -114,9 +83,9 @@ class Bot:
                 "messages[0][text]": f"Answer ChatGPT: {message}",
             },
         )
-        print(response)
+        logger.info(response)
 
-    def get_message(self):
+    async def get_message(self):
         response = self.api_request(
             "core_message_get_conversation_messages",
             data={
@@ -130,7 +99,7 @@ class Bot:
         text = response["messages"][-1]["text"]
         logger.info(text)
         if not "Answer ChatGPT" in text:
-            self.send_message(text)
+            await self.send_message(text)
 
     def run(self):
         self.read_token()
@@ -144,7 +113,7 @@ async def running():
     bot.get_token()
     while True:
         try:
-            bot.get_message()
+            await bot.get_message()
         except Exception as e:
             logger.error(e)
         finally:

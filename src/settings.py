@@ -7,9 +7,10 @@ class Settings(BaseSettings):
     SITE_URL: AnyHttpUrl
     EMAIL: str
     PASSWORD: str
-    OPENAI_KEY: str
     URL_PING: AnyHttpUrl
-    SESSION_TOKEN: str
+    API_ID: int
+    API_HASH: str
+    CHANNEL: int
     model_config = SettingsConfigDict(env_file=".env", env_file_encoding="utf-8")
 
 settings = Settings()

@@ -1,5 +1,5 @@
 from fastapi import FastAPI
-from .cron import run_cron
+# from .cron import run_cron
 from .bot import run_bot
 
 app = FastAPI()
