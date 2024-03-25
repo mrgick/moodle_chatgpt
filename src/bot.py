@@ -96,6 +96,7 @@ class Bot:
         ).json()["choices"][0]["message"]["content"]
 
     def send_message(self, promt):
+        promt = promt.replace("<b>","").replace("</b>","")
         try:
             message = self.get_msg_chatgpt_client(promt)
             print(message)

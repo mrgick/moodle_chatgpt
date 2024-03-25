@@ -7,7 +7,7 @@ app = FastAPI()
 @app.on_event("startup")
 async def startup_event():
     await run_bot()
-    await run_cron()
+    #await run_cron()
 
 
 @app.get("/")
