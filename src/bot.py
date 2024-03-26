@@ -67,7 +67,6 @@ class Bot:
         self.user_id = response["userid"]
 
     async def send_message(self, promt):
-        promt = promt.replace("<b>", "").replace("</b>", "")
         message = "test"
         try:
             message = await get_gigachat_message(promt)
@@ -80,7 +79,7 @@ class Bot:
             "core_message_send_messages_to_conversation",
             data={
                 "conversationid": 43314,
-                "messages[0][text]": f"Answer ChatGPT: {message}",
+                "messages[0][text]": f"----------<br>: {message}",
             },
         )
         logger.info(response)
@@ -98,7 +97,8 @@ class Bot:
         )
         text = response["messages"][-1]["text"]
         logger.info(text)
-        if not "Answer ChatGPT" in text:
+        if not "----------<br>" in text:
+            print(text)
             await self.send_message(text)
 
     def run(self):
