@@ -5,6 +5,7 @@ import asyncio
 import logging
 from .settings import settings
 from .gigachat import get_gigachat_message
+from duckduckgo_search import DDGS
 
 logger = logging.getLogger(__name__)
 
@@ -15,6 +16,8 @@ PASSWORD = settings.PASSWORD
 
 
 class Bot:
+    model = "gigachat"
+
     def __init__(self) -> None:
         return
         self.get_token()
@@ -69,7 +72,10 @@ class Bot:
     async def send_message(self, promt):
         message = "test"
         try:
-            message = await get_gigachat_message(promt)
+            if self.model == "gigachat":
+                message = await get_gigachat_message(promt)
+            elif self.model == "duck":
+                message = DDGS().chat(promt)
             print(message)
         except Exception as e:
             logger.error(e)
@@ -97,7 +103,19 @@ class Bot:
         )
         text = response["messages"][-1]["text"]
         logger.info(text)
-        if not "----------<br>" in text:
+        if text.startswith("<p>/change"):
+            self.model = "gigachat" if self.model == "duck" else "duck"
+
+            response = self.api_request(
+                "core_message_send_messages_to_conversation",
+                data={
+                    "conversationid": 43314,
+                    "messages[0][text]": f"----------<br>: {self.model}",
+                },
+            )
+            logger.info(response)
+
+        elif not "----------<br>" in text:
             print(text)
             await self.send_message(text)
 
